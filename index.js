@@ -1,27 +1,45 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const newsRoutes = require("./routes/news");
-const eventsRoutes = require("./routes/events");
-const usersRoutes = require("./routes/users");
+// const newsRoutes = require("../Routes/news");
+// const eventsRoutes = require("../Routes/events");
+// const usersRoutes = require("../Routes/users");
+require("dotenv").config();
+const cookieParser = require("cookie-parser");
+const authRoute = require("./Routes/AuthRoute");
+const { MONGO_URL } = process.env;
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect("mongodb://localhost:27017/village", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+mongoose
+  .connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("MongoDB is  connected successfully"))
+  .catch((err) => console.error(err));
+
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
 
 // Use routes
-app.use("/news", newsRoutes);
-app.use("/events", eventsRoutes);
-app.use("/users", usersRoutes);
+// app.use("/news", newsRoutes);
+// app.use("/events", eventsRoutes);
+// app.use("/users", usersRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+app.use(cookieParser());
+
+app.use(express.json());
+
+app.use("/", authRoute);
